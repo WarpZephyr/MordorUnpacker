@@ -1,5 +1,6 @@
 ﻿using MordorFormats.LTAR;
 using MordorUnpacker.Logging;
+using OodleCoreSharp.Exceptions;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -59,7 +60,7 @@ namespace MordorUnpacker
             try
             {
 #endif
-            ProcessFile(file);
+                ProcessFile(file);
 #if !DEBUG
             }
             catch (OodleNotFoundException ex)
