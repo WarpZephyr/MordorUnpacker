@@ -4,19 +4,48 @@ using System.Runtime.InteropServices;
 
 namespace MordorUnpacker
 {
+    /// <summary>
+    /// Information about this program gathered into an easy to access and static place.
+    /// </summary>
     internal static class AppInfo
     {
+        /// <summary>
+        /// A representation of the platform the program is on.
+        /// </summary>
         public static readonly string Platform;
+
+        /// <summary>
+        /// The current version of the program.
+        /// </summary>
         public static readonly string Version;
+
+        /// <summary>
+        /// Whether or not the program is built as debug.
+        /// </summary>
 #if DEBUG
         public const bool IsDebug = true;
 #else
         public const bool IsDebug = false;
 #endif
+
+        /// <summary>
+        /// The name of the program.
+        /// </summary>
         public const string AppName = "MordorUnpacker";
+
+        /// <summary>
+        /// The file path of the program.
+        /// </summary>
         public static readonly string AppFilePath;
+
+        /// <summary>
+        /// The folder path of the program.
+        /// </summary>
         public static readonly string AppDirectory;
 
+        /// <summary>
+        /// Initializes <see cref="AppInfo"/>.
+        /// </summary>
         static AppInfo()
         {
             Platform = GetPlatform();
@@ -25,6 +54,10 @@ namespace MordorUnpacker
             AppDirectory = AppDomain.CurrentDomain.BaseDirectory;
         }
 
+        /// <summary>
+        /// Find the app version or default.
+        /// </summary>
+        /// <returns>The app version.</returns>
         private static string GetVersion()
         {
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
@@ -39,6 +72,10 @@ namespace MordorUnpacker
             }
         }
 
+        /// <summary>
+        /// Find the app platform.
+        /// </summary>
+        /// <returns>The app platform.</returns>
         private static string GetPlatform()
         {
             string platform;

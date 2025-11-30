@@ -1,4 +1,6 @@
 ﻿using MordorFormats.LTAR;
+using MordorUnpacker.Data;
+using MordorUnpacker.Data.Configs;
 using MordorUnpacker.Logging;
 using OodleCoreSharp.Exceptions;
 using System;
@@ -9,7 +11,14 @@ namespace MordorUnpacker
 {
     internal class Program
     {
+        /// <summary>
+        /// Whether or not warnings are present.
+        /// </summary>
         private static bool HadWarnings;
+
+        /// <summary>
+        /// Whether or not errors are present.
+        /// </summary>
         private static bool HadErrors;
 
         static void Main(string[] args)
@@ -23,18 +32,11 @@ namespace MordorUnpacker
 
             foreach (string arg in args)
             {
-                if (Directory.Exists(arg))
-                {
-                    ProcessDirectory(arg);
-                }
-                else if (File.Exists(arg))
-                {
-                    ProcessFileErrorHandler(arg);
-                }
-                else
-                {
-                    Warn($"Skipping argument as it isn't a file or folder: \"{arg}\"");
-                }
+#if DEBUG
+                ProcessArg(arg);
+#else
+                ProcessArgErrorHandler(arg);
+#endif
             }
 
             Log.DirectWriteLine("Finished.");
@@ -46,32 +48,63 @@ namespace MordorUnpacker
             Log.Dispose();
         }
 
-        private static void ProcessDirectory(string folder)
+        /// <summary>
+        /// An error wrapper for release versions so the tool can keep on processing other arguments when errors occur.
+        /// </summary>
+        /// <param name="arg">The argument to process.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ProcessArgErrorHandler(string arg)
         {
-            foreach (string file in Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories))
-            {
-                ProcessFileErrorHandler(file);
-            }
-        }
-
-        private static void ProcessFileErrorHandler(string file)
-        {
-#if !DEBUG
             try
             {
-#endif
-                ProcessFile(file);
-#if !DEBUG
+                ProcessArg(arg);
             }
             catch (OodleNotFoundException ex)
             {
-                Error($"Failed to process file due to a lack of oodle: \"{file}\"\n{ex.Message}");
+                Error($"Failed to process argument due to a lack of oodle: \"{arg}\"\n{ex.Message}");
             }
             catch (Exception ex)
             {
-                Error($"Failed to process file: \"{file}\"\nMessage: \"{ex.Message}\"\nStacktrace: \"{ex.StackTrace}\"");
+                Error($"Failed to process argument: \"{arg}\"\nMessage: \"{ex.Message}\"\nStacktrace: \"{ex.StackTrace}\"");
             }
-#endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ProcessArg(string arg)
+        {
+            if (Directory.Exists(arg))
+            {
+                ProcessFolder(arg);
+            }
+            else if (File.Exists(arg))
+            {
+                ProcessFile(arg);
+            }
+            else
+            {
+                Warn($"Skipping argument as it isn't a file or folder: \"{arg}\"");
+            }
+        }
+
+        private static void ProcessFolder(string inFolder)
+        {
+            string inName = new DirectoryInfo(inFolder).Name;
+            string? outFolder = Path.GetDirectoryName(inFolder);
+            if (string.IsNullOrEmpty(outFolder))
+            {
+                Error($"Could not get parent folder of: \"{inFolder}\"");
+                return;
+            }
+
+            if (File.Exists(Path.Combine(inFolder, LtarConfig.ConfigFileName)))
+            {
+                Log.DirectWriteLine($"Repacking LTAR: {inName}...");
+                LtarUnpacker.Repack(inFolder, outFolder);
+            }
+            else
+            {
+                Warn($"Couldn't detect what kind of file to repack for folder: \"{inFolder}\"");
+            }
         }
 
         private static void ProcessFile(string file)
@@ -106,7 +139,7 @@ namespace MordorUnpacker
             if (LtarReader.IsRead(file, out LtarReader? ltar))
             {
                 Log.DirectWriteLine($"Unpacking LTAR at \"{file}\"...");
-                LtarUnpacker.Unpack(ltar, outFolder);
+                LtarUnpacker.Unpack(ltar, fileName, outFolder);
             }
             else
             {

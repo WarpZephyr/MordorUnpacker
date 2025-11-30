@@ -18,24 +18,21 @@ namespace MordorUnpacker.Logging
         {
             var logger = new TimedLogger(5, 300, 3, true);
 
-            Exception? error;
-            StreamWriter? fileLog;
             try
             {
                 Directory.CreateDirectory(FolderPath);
-                fileLog = new StreamWriter(DataPath, true);
-                error = null;
+                StreamWriter fileLog = new StreamWriter(DataPath, true);
+                Proxy = new LogProxy(logger, fileLog);
+            }
+            catch (IOException)
+            {
+                Proxy = new LogProxy(logger, null);
+                Proxy.DirectWriteLine($"Failed to open file log, it may already be open: \"{DataPath}\"");
             }
             catch (Exception ex)
             {
-                fileLog = null;
-                error = ex;
-            }
-
-            Proxy = new LogProxy(logger, fileLog);
-            if (error != null)
-            {
-                Proxy.DirectWriteLine($"Failed opening file log from path \"{DataPath}\": {error}");
+                Proxy = new LogProxy(logger, null);
+                Proxy.DirectWriteLine($"Failed opening file log from path \"{DataPath}\": {ex}");
             }
         }
 
