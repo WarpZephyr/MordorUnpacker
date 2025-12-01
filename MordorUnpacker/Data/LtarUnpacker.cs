@@ -74,6 +74,7 @@ namespace MordorUnpacker.Data
             var ltar = new LtarWriter
             {
                 BigEndian = cfg.BigEndian,
+                UseMaxZlibCompressionLevel = cfg.UseMaxZlibCompressionLevel,
                 OodleCompressor = cfg.OodleCompressor,
                 OodleCompressionLevel = cfg.OodleCompressionLevel,
                 Version = cfg.Version,

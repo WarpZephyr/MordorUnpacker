@@ -39,6 +39,11 @@ namespace MordorUnpacker.Data.Configs
         public bool BigEndian { get; set; }
 
         /// <summary>
+        /// Whether or not to prefer smallest compression for zlib when repacking, will make compression much slower.
+        /// </summary>
+        public bool UseMaxZlibCompressionLevel { get; set; }
+
+        /// <summary>
         /// The oodle compressor to prefer when repacking, certain compressors may be unstable.
         /// </summary>
         public OodleLZ_Compressor OodleCompressor { get; set; }
@@ -85,6 +90,7 @@ namespace MordorUnpacker.Data.Configs
         {
             Name = string.Empty;
             BigEndian = false;
+            UseMaxZlibCompressionLevel = false;
             OodleCompressor = OodleLZ_Compressor.Mermaid;
             OodleCompressionLevel = OodleLZ_CompressionLevel.HyperFast4;
             Version = 4;
